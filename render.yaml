@@ -22,4 +22,4 @@ services:
       - key: TOKENROUTER_BASE_URL
         value: https://api.tokenrouter.com/v1
       - key: TOKENROUTER_MODEL
-        value: qwen/qwen3.8-max
+        value: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free

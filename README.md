@@ -149,7 +149,7 @@ cp .env.example .env
 #   PINECONE_INDEX=askmydocs
 #   TOKENROUTER_API_KEY=...
 #   TOKENROUTER_BASE_URL=https://api.tokenrouter.com/v1
-#   TOKENROUTER_MODEL=qwen/qwen3.8-max
+#   TOKENROUTER_MODEL=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
 ```
 
 ### Run Locally
@@ -207,7 +207,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | **1. Ingest** | `PyPDFLoader` + `RecursiveCharacterTextSplitter` | Parses PDF → 800-char chunks with 200-char overlap |
 | **2. Index** | Elasticsearch + Pinecone | Stores BM25 text in Elasticsearch and chunk documents in Pinecone |
 | **3. Retrieve** | `hybrid_search()` | Runs BM25 (fuzzy) and semantic search, then blends normalized scores |
-| **4. Generate** | `generate_answer()` | Sends top 8 hybrid-search chunks to Qwen 3.8 Max through TokenRouter with a citation-enforced prompt |
+| **4. Generate** | `generate_answer()` | Sends top 8 hybrid-search chunks to the configured TokenRouter model with a citation-enforced prompt |
 | **5. Cite** | Prompt engineering | LLM must cite `[Source N]` for every claim; UI shows expandable source list |
 
 ---
@@ -242,7 +242,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | **Streamlit** | Chat-based frontend UI |
 | **Elasticsearch Cloud** | BM25 keyword search with fuzzy matching |
 | **Pinecone** | Vector database for semantic search |
-| **TokenRouter + Qwen 3.8 Max** | Citation-grounded answer generation |
+| **TokenRouter + NVIDIA Nemotron (free-tagged)** | Citation-grounded answer generation; provider quotas may apply |
 | **Pinecone integrated embeddings** | Embedding model configured on the Pinecone document index |
 | **LangChain** | PDF loading + text splitting |
 | **Python 3.11** | Runtime |

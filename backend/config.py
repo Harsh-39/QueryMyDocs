@@ -18,4 +18,7 @@ TOKENROUTER_BASE_URL = os.getenv(
     "TOKENROUTER_BASE_URL",
     "https://api.tokenrouter.com/v1",
 )
-TOKENROUTER_MODEL = os.getenv("TOKENROUTER_MODEL", "qwen/qwen3.8-max")
+TOKENROUTER_MODEL = os.getenv(
+    "TOKENROUTER_MODEL",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+)
