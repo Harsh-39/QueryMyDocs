@@ -1,9 +1,9 @@
 from openai import OpenAI
 
 from config import (
-    TOKENROUTER_API_KEY,
-    TOKENROUTER_BASE_URL,
-    TOKENROUTER_MODEL,
+    GROQ_API_KEY,
+    GROQ_BASE_URL,
+    GROQ_MODEL,
 )
 
 client = None
@@ -12,13 +12,13 @@ client = None
 def _get_client():
     global client
 
-    if not TOKENROUTER_API_KEY:
-        raise RuntimeError("TOKENROUTER_API_KEY is not configured.")
+    if not GROQ_API_KEY:
+        raise RuntimeError("GROQ_API_KEY is not configured.")
 
     if client is None:
         client = OpenAI(
-            api_key=TOKENROUTER_API_KEY,
-            base_url=TOKENROUTER_BASE_URL,
+            api_key=GROQ_API_KEY,
+            base_url=GROQ_BASE_URL,
             timeout=20.0,
             max_retries=0,
         )
@@ -56,15 +56,15 @@ USER QUESTION:
 ANSWER (with citations):"""
 
     response = _get_client().chat.completions.create(
-        model=TOKENROUTER_MODEL,
+        model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
 
     if not response.choices:
-        raise RuntimeError("TokenRouter returned an empty answer.")
+        raise RuntimeError("Groq returned an empty answer.")
 
     answer = response.choices[0].message.content
     if not isinstance(answer, str) or not answer.strip():
-        raise RuntimeError("TokenRouter returned an empty answer.")
+        raise RuntimeError("Groq returned an empty answer.")
 
     return answer

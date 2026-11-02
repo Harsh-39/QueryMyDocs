@@ -1,11 +1,11 @@
 # 📄 AskMyDocs — Production RAG Application
 
-> A domain-specific **"Ask My Docs"** system with hybrid retrieval (BM25 + vector search) and citation enforcement — powered by Elasticsearch, Pinecone, and TokenRouter.
+> A domain-specific **"Ask My Docs"** system with hybrid retrieval (BM25 + vector search) and citation enforcement — powered by Elasticsearch, Pinecone, and Groq.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?logo=fastapi)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-red?logo=streamlit)
-![TokenRouter](https://img.shields.io/badge/LLM-TokenRouter-blue)
+![Groq](https://img.shields.io/badge/LLM-Groq-blue)
 
 ---
 
@@ -59,7 +59,7 @@
 │                                └────────────┬─────────────┘             │
 │                                             ▼                           │
 │                                ┌──────────────────────────┐             │
-│                                │  TokenRouter + Qwen      │             │
+│                                │  Groq GPT-OSS 20B        │             │
 │                                │  (Citation-enforced      │             │
 │                                │   answer generation)     │             │
 │                                └────────────┬─────────────┘             │
@@ -100,7 +100,7 @@ AskMyDocs-RAG/
 │   ├── main.py              # FastAPI app — /upload and /ask endpoints
 │   ├── config.py            # Environment variable configuration
 │   ├── retrieve.py          # Hybrid search and score fusion
-│   ├── generate.py          # TokenRouter LLM — cited answer generation
+│   ├── generate.py          # Groq LLM — cited answer generation
 │   └── requirements.txt     # Backend dependencies
 ├── frontend/
 │   └── app.py               # Streamlit chat UI
@@ -120,7 +120,7 @@ AskMyDocs-RAG/
 - API Keys for:
   - [Elasticsearch Cloud](https://cloud.elastic.co/) (Cloud ID + API Key)
   - [Pinecone](https://www.pinecone.io/) (API Key + document-schema index with a `chunk_text` field configured for integrated embeddings)
-  - [TokenRouter](https://www.tokenrouter.com/) API key
+  - [GroqCloud](https://console.groq.com/keys) API key
 
 ### Installation
 
@@ -147,9 +147,8 @@ cp .env.example .env
 #   ELASTIC_API_KEY=...
 #   PINECONE_API_KEY=...
 #   PINECONE_INDEX=askmydocs
-#   TOKENROUTER_API_KEY=...
-#   TOKENROUTER_BASE_URL=https://api.tokenrouter.com/v1
-#   TOKENROUTER_MODEL=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
+#   GROQ_API_KEY=...
+#   GROQ_MODEL=openai/gpt-oss-20b
 ```
 
 ### Run Locally
@@ -207,7 +206,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | **1. Ingest** | `PyPDFLoader` + `RecursiveCharacterTextSplitter` | Parses PDF → 800-char chunks with 200-char overlap |
 | **2. Index** | Elasticsearch + Pinecone | Stores BM25 text in Elasticsearch and chunk documents in Pinecone |
 | **3. Retrieve** | `hybrid_search()` | Runs BM25 (fuzzy) and semantic search, then blends normalized scores |
-| **4. Generate** | `generate_answer()` | Sends top 8 hybrid-search chunks to the configured TokenRouter model with a citation-enforced prompt |
+| **4. Generate** | `generate_answer()` | Sends top 8 hybrid-search chunks to Groq GPT-OSS 20B with a citation-enforced prompt |
 | **5. Cite** | Prompt engineering | LLM must cite `[Source N]` for every claim; UI shows expandable source list |
 
 ---
@@ -219,7 +218,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 1. Push code to GitHub
 2. Create a new **Web Service** on [Render](https://render.com)
 3. Connect your repo — Render auto-detects `render.yaml`
-4. In **Environment**, add `TOKENROUTER_API_KEY` using a newly generated TokenRouter key. The base URL and model are set by `render.yaml`.
+4. In **Environment**, add `GROQ_API_KEY` using a newly generated Groq key. The model is set by `render.yaml`.
 5. Deploy → API available at `https://your-app.onrender.com`
 
 ### Streamlit Cloud (Frontend)
@@ -242,7 +241,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | **Streamlit** | Chat-based frontend UI |
 | **Elasticsearch Cloud** | BM25 keyword search with fuzzy matching |
 | **Pinecone** | Vector database for semantic search |
-| **TokenRouter + NVIDIA Nemotron (free-tagged)** | Citation-grounded answer generation; provider quotas may apply |
+| **Groq + GPT-OSS 20B** | Citation-grounded answer generation; provider quotas may apply |
 | **Pinecone integrated embeddings** | Embedding model configured on the Pinecone document index |
 | **LangChain** | PDF loading + text splitting |
 | **Python 3.11** | Runtime |
@@ -257,7 +256,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | Pinecone document-schema error | Use the Documents API with a `chunk_text` field and a document-specific namespace |
 | PDF upload fails | Check file isn't corrupted; ensure Elasticsearch index `docs` exists |
 | "No relevant information found" | Re-upload PDF (needed after embedding model changes) |
-| TokenRouter request fails | Check `TOKENROUTER_API_KEY`, base URL, model ID, and TokenRouter account quota |
+| Groq request fails | Check `GROQ_API_KEY`, model ID, and Groq account limits |
 | `ConnectionError` on Streamlit Cloud | `API_URL` secret not set — add it in Streamlit Cloud → Settings → Secrets |
 
 ---

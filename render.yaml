@@ -17,9 +17,7 @@ services:
         sync: false
       - key: PINECONE_INDEX
         sync: false
-      - key: TOKENROUTER_API_KEY
+      - key: GROQ_API_KEY
         sync: false
-      - key: TOKENROUTER_BASE_URL
-        value: https://api.tokenrouter.com/v1
-      - key: TOKENROUTER_MODEL
-        value: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b

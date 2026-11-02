@@ -12,13 +12,7 @@ ELASTIC_API_KEY = os.getenv("ELASTIC_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX = os.getenv("PINECONE_INDEX")
 
-# TokenRouter API
-TOKENROUTER_API_KEY = os.getenv("TOKENROUTER_API_KEY")
-TOKENROUTER_BASE_URL = os.getenv(
-    "TOKENROUTER_BASE_URL",
-    "https://api.tokenrouter.com/v1",
-)
-TOKENROUTER_MODEL = os.getenv(
-    "TOKENROUTER_MODEL",
-    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-)
+# Groq API
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
