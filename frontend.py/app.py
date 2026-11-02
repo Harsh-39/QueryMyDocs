@@ -82,6 +82,12 @@ if st.session_state.docs:
                     res = requests.post(
                         f"{API_URL}/ask",
                         params={"query": query, "doc_id": doc_id},
+                        timeout=(10, 50),
+                    )
+                except requests.Timeout:
+                    st.error(
+                        "The request took too long. Please try again in a "
+                        "moment."
                     )
                 except requests.RequestException as e:
                     st.error(f"Could not reach the API: {e}")

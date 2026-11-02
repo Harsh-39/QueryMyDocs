@@ -1,8 +1,21 @@
 from google import genai
+from google.genai import types
 
 from config import GEMINI_API_KEY
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = genai.Client(
+    api_key=GEMINI_API_KEY,
+    http_options=types.HttpOptions(
+        timeout=20_000,
+        retry_options=types.HttpRetryOptions(
+            attempts=2,
+            initial_delay=1,
+            max_delay=2,
+            jitter=0,
+            http_status_codes=[408, 500, 502, 503, 504],
+        ),
+    ),
+)
 
 
 def generate_text(query, docs):

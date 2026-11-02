@@ -1,6 +1,6 @@
 # 📄 AskMyDocs — Production RAG Application
 
-> A domain-specific **"Ask My Docs"** system with hybrid retrieval (BM25 + vector search), cross-encoder reranking, and citation enforcement — powered by Elasticsearch, Pinecone, and Google Gemini.
+> A domain-specific **"Ask My Docs"** system with hybrid retrieval (BM25 + vector search) and citation enforcement — powered by Elasticsearch, Pinecone, and Google Gemini.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?logo=fastapi)
@@ -53,12 +53,12 @@
 │  │  Query   │                └─────────────┬──────────────────┘         │
 │  └──────────┘                              ▼                            │
 │                                ┌──────────────────────────┐             │
-│                                │  Cross-Encoder Reranking │             │
-│                                │  (Gemini-based scoring)  │             │
+│                                │  Hybrid score fusion    │             │
+│                                │  (BM25 + semantic)      │             │
 │                                └────────────┬─────────────┘             │
 │                                             ▼                           │
 │                                ┌──────────────────────────┐             │
-│                                │  Gemini 2.5 Flash        │             │
+│                                │  Gemini 3.8 Flash        │             │
 │                                │  (Citation-enforced      │             │
 │                                │   answer generation)     │             │
 │                                └────────────┬─────────────┘             │
@@ -78,11 +78,6 @@
 - **BM25 (Elasticsearch)**: Keyword-based search with fuzzy matching, handles typos and partial terms
 - **Vector Search (Pinecone integrated embeddings)**: Semantic search using the embedding model configured on the Pinecone document index
 - **Alpha-Blended Fusion**: Min-max normalized scores combined with configurable α weighting
-
-### 🎯 Cross-Encoder Reranking
-- Gemini-based relevance scoring (0-10) for each passage against the query
-- Reorders hybrid search results by true relevance
-- Zero memory overhead — API-based, no local PyTorch models
 
 ### 📑 Citation Enforcement
 - Source passages numbered `[Source 1]`, `[Source 2]`, etc.
@@ -208,10 +203,9 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 |-------|-----------|-------------|
 | **1. Ingest** | `PyPDFLoader` + `RecursiveCharacterTextSplitter` | Parses PDF → 800-char chunks with 200-char overlap |
 | **2. Index** | Elasticsearch + Pinecone | Stores BM25 text in Elasticsearch and chunk documents in Pinecone |
-| **3. Retrieve** | `hybrid_search()` | Runs BM25 (fuzzy) + vector search in parallel, α-blends normalized scores |
-| **4. Rerank** | `rerank_with_gemini()` | Gemini scores each passage 0-10 for relevance, reorders by score |
-| **5. Generate** | `generate_answer()` | Sends top 8 reranked chunks to Gemini 2.5 Flash with citation-enforced prompt |
-| **6. Cite** | Prompt engineering | LLM must cite `[Source N]` for every claim; UI shows expandable source list |
+| **3. Retrieve** | `hybrid_search()` | Runs BM25 (fuzzy) and semantic search, then blends normalized scores |
+| **4. Generate** | `generate_answer()` | Sends top 8 hybrid-search chunks to Gemini 3.8 Flash with citation-enforced prompt |
+| **5. Cite** | Prompt engineering | LLM must cite `[Source N]` for every claim; UI shows expandable source list |
 
 ---
 
@@ -245,7 +239,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | **Streamlit** | Chat-based frontend UI |
 | **Elasticsearch Cloud** | BM25 keyword search with fuzzy matching |
 | **Pinecone** | Vector database for semantic search |
-| **Google Gemini 2.5 Flash** | LLM for answer generation + reranking |
+| **Google Gemini 3.8 Flash** | Citation-grounded answer generation |
 | **Pinecone integrated embeddings** | Embedding model configured on the Pinecone document index |
 | **LangChain** | PDF loading + text splitting |
 | **Python 3.11** | Runtime |
