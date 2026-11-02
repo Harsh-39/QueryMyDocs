@@ -3,9 +3,11 @@ uvicorn[standard]
 gunicorn
 python-multipart
 elasticsearch
-pinecone
+pinecone>=10.2.0
 langchain-community
 langchain-text-splitters
 pypdf
 google-genai
 python-dotenv
+requests
+streamlit

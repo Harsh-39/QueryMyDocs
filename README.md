@@ -76,7 +76,7 @@
 
 ### 🔍 Hybrid Retrieval (BM25 + Vector Search)
 - **BM25 (Elasticsearch)**: Keyword-based search with fuzzy matching, handles typos and partial terms
-- **Vector Search (Pinecone + Gemini Embeddings)**: Semantic search using `text-embedding-004` — understands meaning, not just keywords
+- **Vector Search (Pinecone integrated embeddings)**: Semantic search using the embedding model configured on the Pinecone document index
 - **Alpha-Blended Fusion**: Min-max normalized scores combined with configurable α weighting
 
 ### 🎯 Cross-Encoder Reranking
@@ -123,7 +123,7 @@ AskMyDocs-RAG/
 - Python 3.11+
 - API Keys for:
   - [Elasticsearch Cloud](https://cloud.elastic.co/) (Cloud ID + API Key)
-  - [Pinecone](https://www.pinecone.io/) (API Key + Index named `askmydocs`, 384 dimensions, cosine metric)
+  - [Pinecone](https://www.pinecone.io/) (API Key + document-schema index with a `chunk_text` field configured for integrated embeddings)
   - [Google Gemini API](https://aistudio.google.com/apikey)
 
 ### Installation
@@ -207,7 +207,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | Stage | Component | What It Does |
 |-------|-----------|-------------|
 | **1. Ingest** | `PyPDFLoader` + `RecursiveCharacterTextSplitter` | Parses PDF → 800-char chunks with 200-char overlap |
-| **2. Index** | Elasticsearch + Pinecone | Dual-indexes: BM25 text index + Gemini embedding vectors (384-dim) |
+| **2. Index** | Elasticsearch + Pinecone | Stores BM25 text in Elasticsearch and chunk documents in Pinecone |
 | **3. Retrieve** | `hybrid_search()` | Runs BM25 (fuzzy) + vector search in parallel, α-blends normalized scores |
 | **4. Rerank** | `rerank_with_gemini()` | Gemini scores each passage 0-10 for relevance, reorders by score |
 | **5. Generate** | `generate_answer()` | Sends top 8 reranked chunks to Gemini 2.5 Flash with citation-enforced prompt |
@@ -246,7 +246,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | **Elasticsearch Cloud** | BM25 keyword search with fuzzy matching |
 | **Pinecone** | Vector database for semantic search |
 | **Google Gemini 2.5 Flash** | LLM for answer generation + reranking |
-| **Gemini embedding-001** | Embedding model (384-dim via MRL truncation, API-based) |
+| **Pinecone integrated embeddings** | Embedding model configured on the Pinecone document index |
 | **LangChain** | PDF loading + text splitting |
 | **Python 3.11** | Runtime |
 
@@ -257,7 +257,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | Problem | Solution |
 |---------|----------|
 | `No open ports detected` (Render) | Ensure start command uses `--host 0.0.0.0 --port $PORT` |
-| `Out of memory` (Render 512MB) | Don't install `sentence-transformers` — use Gemini embeddings API instead |
+| Pinecone document-schema error | Use the Documents API with a `chunk_text` field and a document-specific namespace |
 | PDF upload fails | Check file isn't corrupted; ensure Elasticsearch index `docs` exists |
 | "No relevant information found" | Re-upload PDF (needed after embedding model changes) |
 | Slow first query | Gemini API cold start — subsequent queries are faster |
