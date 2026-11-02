@@ -1,21 +1,29 @@
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
-from config import GEMINI_API_KEY
-
-client = genai.Client(
-    api_key=GEMINI_API_KEY,
-    http_options=types.HttpOptions(
-        timeout=20_000,
-        retry_options=types.HttpRetryOptions(
-            attempts=2,
-            initial_delay=1,
-            max_delay=2,
-            jitter=0,
-            http_status_codes=[408, 500, 502, 503, 504],
-        ),
-    ),
+from config import (
+    TOKENROUTER_API_KEY,
+    TOKENROUTER_BASE_URL,
+    TOKENROUTER_MODEL,
 )
+
+client = None
+
+
+def _get_client():
+    global client
+
+    if not TOKENROUTER_API_KEY:
+        raise RuntimeError("TOKENROUTER_API_KEY is not configured.")
+
+    if client is None:
+        client = OpenAI(
+            api_key=TOKENROUTER_API_KEY,
+            base_url=TOKENROUTER_BASE_URL,
+            timeout=20.0,
+            max_retries=0,
+        )
+
+    return client
 
 
 def generate_text(query, docs):
@@ -47,11 +55,16 @@ USER QUESTION:
 
 ANSWER (with citations):"""
 
-    response = client.interactions.create(
-        model="gemini-3.8-flash",
-        input=prompt,
+    response = _get_client().chat.completions.create(
+        model=TOKENROUTER_MODEL,
+        messages=[{"role": "user", "content": prompt}],
     )
-    if not response.output_text:
-        raise RuntimeError("Gemini returned an empty answer.")
 
-    return response.output_text
+    if not response.choices:
+        raise RuntimeError("TokenRouter returned an empty answer.")
+
+    answer = response.choices[0].message.content
+    if not isinstance(answer, str) or not answer.strip():
+        raise RuntimeError("TokenRouter returned an empty answer.")
+
+    return answer

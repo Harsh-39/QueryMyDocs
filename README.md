@@ -1,11 +1,11 @@
 # 📄 AskMyDocs — Production RAG Application
 
-> A domain-specific **"Ask My Docs"** system with hybrid retrieval (BM25 + vector search) and citation enforcement — powered by Elasticsearch, Pinecone, and Google Gemini.
+> A domain-specific **"Ask My Docs"** system with hybrid retrieval (BM25 + vector search) and citation enforcement — powered by Elasticsearch, Pinecone, and TokenRouter.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?logo=fastapi)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-red?logo=streamlit)
-![Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-orange?logo=google)
+![TokenRouter](https://img.shields.io/badge/LLM-TokenRouter-blue)
 
 ---
 
@@ -45,7 +45,8 @@
 │                                ┌──────────────────┐  ┌──────────────┐   │
 │                                │  Elasticsearch   │  │  Pinecone    │   │
 │                                │  (BM25 Index)    │  │  (Vectors)   │   │
-│                                │  Fuzzy Matching  │  │  Gemini Emb. │   │
+│                                │  Fuzzy Matching  │  │  Integrated  │   │
+│                                │                 │  │  Embeddings  │   │
 │                                └────────┬─────────┘  └───────┬──────┘   │ 
 │                                         │                    │          │
 │  ┌──────────┐                ┌──────────┴───────────────────┴─┐         │
@@ -58,7 +59,7 @@
 │                                └────────────┬─────────────┘             │
 │                                             ▼                           │
 │                                ┌──────────────────────────┐             │
-│                                │  Gemini 3.8 Flash        │             │
+│                                │  TokenRouter + Qwen      │             │
 │                                │  (Citation-enforced      │             │
 │                                │   answer generation)     │             │
 │                                └────────────┬─────────────┘             │
@@ -98,13 +99,13 @@ AskMyDocs-RAG/
 ├── backend/
 │   ├── main.py              # FastAPI app — /upload and /ask endpoints
 │   ├── config.py            # Environment variable configuration
-│   ├── retrieve.py          # Hybrid search, embeddings, reranking
-│   ├── generate.py          # Gemini LLM — citation-enforced generation
+│   ├── retrieve.py          # Hybrid search and score fusion
+│   ├── generate.py          # TokenRouter LLM — cited answer generation
 │   └── requirements.txt     # Backend dependencies
 ├── frontend/
 │   └── app.py               # Streamlit chat UI
 ├── render.yaml              # Render deployment config
-├── requirements.txt         # Root dependencies (Render uses this)
+├── requirements.txt         # Root dependencies
 ├── .env                     # API keys (not committed)
 ├── .env.example             # Template for required env vars
 └── README.md
@@ -119,7 +120,7 @@ AskMyDocs-RAG/
 - API Keys for:
   - [Elasticsearch Cloud](https://cloud.elastic.co/) (Cloud ID + API Key)
   - [Pinecone](https://www.pinecone.io/) (API Key + document-schema index with a `chunk_text` field configured for integrated embeddings)
-  - [Google Gemini API](https://aistudio.google.com/apikey)
+  - [TokenRouter](https://www.tokenrouter.com/) API key
 
 ### Installation
 
@@ -146,7 +147,9 @@ cp .env.example .env
 #   ELASTIC_API_KEY=...
 #   PINECONE_API_KEY=...
 #   PINECONE_INDEX=askmydocs
-#   GEMINI_API_KEY=...
+#   TOKENROUTER_API_KEY=...
+#   TOKENROUTER_BASE_URL=https://api.tokenrouter.com/v1
+#   TOKENROUTER_MODEL=qwen/qwen3.8-max
 ```
 
 ### Run Locally
@@ -204,7 +207,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | **1. Ingest** | `PyPDFLoader` + `RecursiveCharacterTextSplitter` | Parses PDF → 800-char chunks with 200-char overlap |
 | **2. Index** | Elasticsearch + Pinecone | Stores BM25 text in Elasticsearch and chunk documents in Pinecone |
 | **3. Retrieve** | `hybrid_search()` | Runs BM25 (fuzzy) and semantic search, then blends normalized scores |
-| **4. Generate** | `generate_answer()` | Sends top 8 hybrid-search chunks to Gemini 3.8 Flash with citation-enforced prompt |
+| **4. Generate** | `generate_answer()` | Sends top 8 hybrid-search chunks to Qwen 3.8 Max through TokenRouter with a citation-enforced prompt |
 | **5. Cite** | Prompt engineering | LLM must cite `[Source N]` for every claim; UI shows expandable source list |
 
 ---
@@ -216,7 +219,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 1. Push code to GitHub
 2. Create a new **Web Service** on [Render](https://render.com)
 3. Connect your repo — Render auto-detects `render.yaml`
-4. Add environment variables in Render dashboard
+4. In **Environment**, add `TOKENROUTER_API_KEY` using a newly generated TokenRouter key. The base URL and model are set by `render.yaml`.
 5. Deploy → API available at `https://your-app.onrender.com`
 
 ### Streamlit Cloud (Frontend)
@@ -239,7 +242,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | **Streamlit** | Chat-based frontend UI |
 | **Elasticsearch Cloud** | BM25 keyword search with fuzzy matching |
 | **Pinecone** | Vector database for semantic search |
-| **Google Gemini 3.8 Flash** | Citation-grounded answer generation |
+| **TokenRouter + Qwen 3.8 Max** | Citation-grounded answer generation |
 | **Pinecone integrated embeddings** | Embedding model configured on the Pinecone document index |
 | **LangChain** | PDF loading + text splitting |
 | **Python 3.11** | Runtime |
@@ -254,7 +257,7 @@ Open **http://localhost:8501** → Upload a PDF → Start asking questions!
 | Pinecone document-schema error | Use the Documents API with a `chunk_text` field and a document-specific namespace |
 | PDF upload fails | Check file isn't corrupted; ensure Elasticsearch index `docs` exists |
 | "No relevant information found" | Re-upload PDF (needed after embedding model changes) |
-| Slow first query | Gemini API cold start — subsequent queries are faster |
+| TokenRouter request fails | Check `TOKENROUTER_API_KEY`, base URL, model ID, and TokenRouter account quota |
 | `ConnectionError` on Streamlit Cloud | `API_URL` secret not set — add it in Streamlit Cloud → Settings → Secrets |
 
 ---

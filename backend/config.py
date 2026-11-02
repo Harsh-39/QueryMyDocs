@@ -12,5 +12,10 @@ ELASTIC_API_KEY = os.getenv("ELASTIC_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX = os.getenv("PINECONE_INDEX")
 
-# Gemini API
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# TokenRouter API
+TOKENROUTER_API_KEY = os.getenv("TOKENROUTER_API_KEY")
+TOKENROUTER_BASE_URL = os.getenv(
+    "TOKENROUTER_BASE_URL",
+    "https://api.tokenrouter.com/v1",
+)
+TOKENROUTER_MODEL = os.getenv("TOKENROUTER_MODEL", "qwen/qwen3.8-max")

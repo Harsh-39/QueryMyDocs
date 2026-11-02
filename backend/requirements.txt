@@ -7,5 +7,5 @@ pinecone>=10.2.0
 langchain-community
 langchain-text-splitters
 pypdf
-google-genai
+openai>=1.0.0
 python-dotenv
