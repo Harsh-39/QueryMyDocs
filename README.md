@@ -11,7 +11,7 @@
 
 ## 🚀 Live Demo
 
-**[https://askmydocs4u.streamlit.app/](https://askmydocs4u.streamlit.app/)**
+**[(https://querymydocs4u.streamlit.app/)](https://querymydocs4u.streamlit.app/)**
 
 > Frontend Hosted on **Streamlit** | Backend Hosted on **Render**
 ---
