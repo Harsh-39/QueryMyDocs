@@ -1,4 +1,4 @@
-# 📄 AskMyDocs — Production RAG Application
+# 📄 QueryMyDocs — Production RAG Application
 
 > A domain-specific **"Ask My Docs"** system with hybrid retrieval (BM25 + vector search) and citation enforcement — powered by Elasticsearch, Pinecone, and Groq.
 
